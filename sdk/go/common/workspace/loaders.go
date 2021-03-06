@@ -19,6 +19,7 @@ import (
 	"os"
 	"sync"
 
+	"github.com/pulumi/pulumi/sdk/v2/go/common/encoding"
 	"github.com/pulumi/pulumi/sdk/v2/go/common/resource/config"
 	"github.com/pulumi/pulumi/sdk/v2/go/common/util/contract"
 )
@@ -78,6 +79,11 @@ func (singleton *projectLoader) load(path string) (*Project, error) {
 		return nil, err
 	}
 
+	project.FileAST, err = encoding.NewFileAST(b)
+	if err != nil {
+		return nil, err
+	}
+
 	err = project.Validate()
 	if err != nil {
 		return nil, err
@@ -111,8 +117,10 @@ func (singleton *projectStackLoader) load(path string) (*ProjectStack, error) {
 	b, err := ioutil.ReadFile(path)
 	if os.IsNotExist(err) {
 		projectStack = ProjectStack{
-			Config: make(config.Map),
+			Config:  make(config.Map),
+			FileAST: &encoding.FileAST{},
 		}
+
 		singleton.internal[path] = &projectStack
 		return &projectStack, nil
 	} else if err != nil {
@@ -126,6 +134,11 @@ func (singleton *projectStackLoader) load(path string) (*ProjectStack, error) {
 
 	if projectStack.Config == nil {
 		projectStack.Config = make(config.Map)
+	}
+
+	projectStack.FileAST, err = encoding.NewFileAST(b)
+	if err != nil {
+		return nil, err
 	}
 
 	singleton.internal[path] = &projectStack
