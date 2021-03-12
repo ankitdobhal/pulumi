@@ -1,13 +1,13 @@
-### Breaking
+### Breaking Changes
 
+- [CLI] Standardize the `--stack` flag to *not* set the stack as current (i.e. setStack=false) across CLI commands.
+  [#6300](https://github.com/pulumi/pulumi/pull/6300)
+
+- [Automation/*] All operations use `--stack` to specify the stack instead of running `select stack` before the operation.
+  [#6300](https://github.com/pulumi/pulumi/pull/6300)
 
 ### Improvements
 
-- [cli] Improve diff displays during `pulumi refresh`
-  [#6568](https://github.com/pulumi/pulumi/pull/6568)
 
-- [sdk/go] Cache loaded configuration files.
-  [#6576](https://github.com/pulumi/pulumi/pull/6576)
-  
 ### Bug Fixes
 
