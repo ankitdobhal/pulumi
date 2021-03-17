@@ -5,8 +5,18 @@
 
 - [Automation/*] All operations use `--stack` to specify the stack instead of running `select stack` before the operation.
   [#6300](https://github.com/pulumi/pulumi/pull/6300)
+  
+- [Automation/go] Moving go automation API package from sdk/v2/go/x/auto -> sdk/v2/go/auto
+  [#6518](https://github.com/pulumi/pulumi/pull/6518)
+  
+- [Automation/nodejs] Moving NodeJS automation API package from sdk/nodejs/x/automation -> sdk/nodejs/automation
+  [#6518](https://github.com/pulumi/pulumi/pull/6518)
 
-### Improvements
+- [Automation/python] Moving Python automation API package from pulumi.x.automation -> pulumi.automation
+  [#6518](https://github.com/pulumi/pulumi/pull/6518)
+
+
+### Enhancements
 
 
 ### Bug Fixes
