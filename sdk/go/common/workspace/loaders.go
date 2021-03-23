@@ -15,6 +15,7 @@
 package workspace
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"sync"
@@ -84,6 +85,7 @@ func (singleton *projectLoader) load(path string) (*Project, error) {
 		return nil, err
 	}
 
+	fmt.Printf("***Project struct:\n%+v\n", project)
 	err = project.Validate()
 	if err != nil {
 		return nil, err
