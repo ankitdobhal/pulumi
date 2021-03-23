@@ -73,6 +73,8 @@ func (singleton *projectLoader) load(path string) (*Project, error) {
 	if err != nil {
 		return nil, err
 	}
+	fmt.Printf("***Project string(bytes):\n%s\n***End Project string(bytes)\n", string(b))
+	fmt.Printf("***Project bytes:\n%v\n***End Project bytes\n", b)
 
 	var project Project
 	err = marshaller.Unmarshal(b, &project)
