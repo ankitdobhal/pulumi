@@ -1,5 +1,7 @@
 ### Breaking
 
+- [sdk/go] Simplify `Apply` method options to reduce binary size
+  [#6607](https://github.com/pulumi/pulumi/pull/6607)
 
 ### Improvements
 
@@ -13,6 +15,6 @@
   - Go: `LocalWorkspace.PulumiVersion()` - [#6577](https://github.com/pulumi/pulumi/pull/6577)
   - Nodejs: `LocalWorkspace.pulumiVersion` - [#6580](https://github.com/pulumi/pulumi/pull/6580)
   - Python: `LocalWorkspace.pulumi_version` - [#6589](https://github.com/pulumi/pulumi/pull/6589)
-  
+
 ### Bug Fixes
 
