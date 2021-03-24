@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"testing"
 
 	"github.com/pulumi/pulumi/pkg/v2/testing/integration"
@@ -398,5 +399,26 @@ func TestGetResourcePython(t *testing.T) {
 			filepath.Join("..", "..", "sdk", "python", "env", "src"),
 		},
 		AllowEmptyPreviewChanges: true,
+	})
+}
+
+func TestPythonAwait(t *testing.T) {
+	integration.ProgramTest(t, &integration.ProgramTestOptions{
+		Dir: "python_await",
+		Dependencies: []string{
+			filepath.Join("..", "..", "sdk", "python", "env", "src"),
+		},
+		AllowEmptyPreviewChanges: true,
+		ExtraRuntimeValidation: func(t *testing.T, stack integration.RuntimeValidationStackInfo) {
+			sawMagicStringMessage := false
+			for _, evt := range stack.Events {
+				if evt.DiagnosticEvent != nil {
+					if strings.Contains(evt.DiagnosticEvent.Message, "magic string") {
+						sawMagicStringMessage = true
+					}
+				}
+			}
+			assert.True(t, sawMagicStringMessage, "Did not see printed message from unexported output")
+		},
 	})
 }
