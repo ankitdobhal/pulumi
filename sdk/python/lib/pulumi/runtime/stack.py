@@ -16,6 +16,7 @@
 Support for automatic stack components.
 """
 import asyncio
+from contextlib import suppress
 from inspect import isawaitable
 from typing import Callable, Any, Dict, List, TYPE_CHECKING
 
@@ -32,42 +33,38 @@ if TYPE_CHECKING:
 async def run_pulumi_func(func: Callable):
     try:
         func()
-    finally:
-        log.debug("Waiting for outstanding RPCs to complete")
 
-        # Pump the event loop, giving all of the RPCs that we just queued up time to fully execute.
-        # The asyncio scheduler does not expose a "yield" primitive, so this will have to do.
-        #
-        # Note that "asyncio.sleep(0)" is the blessed way to do this:
-        # https://github.com/python/asyncio/issues/284#issuecomment-154180935
-        #
-        # We await each RPC in turn so that this loop will actually block rather than busy-wait.
-        while True:
-            await asyncio.sleep(0)
-            rpcs_remaining = len(RPC_MANAGER.rpcs)
-            if rpcs_remaining == 0:
-                break
-            log.debug(f"waiting for quiescence; {rpcs_remaining} RPCs outstanding")
-            await RPC_MANAGER.rpcs.pop()
+        # Await all RPCs to complete
+        log.debug("Waiting for all outstanding RPCs to complete")
+        await asyncio.gather(*RPC_MANAGER.rpcs)
+        log.debug("RPCs fully executed")
 
-        # Asyncio event loops require that all outstanding tasks be completed by the time that the
-        # event loop closes. If we're at this point and there are no outstanding RPCs, we should
-        # just cancel all outstanding tasks.
-        #
-        # We will occasionally start tasks deliberately that we know will never complete. We must
-        # cancel them before shutting down the event loop.
-        log.debug("Canceling all outstanding tasks")
+        # Await all outstanding tasks to fully execute.
+        log.debug("Waiting for all outstanding tasks to complete")
+        outstanding_tasks = []
         for task in _all_tasks():
             # Don't kill ourselves, that would be silly.
-            if task == _get_current_task():
-                continue
+            if not task == _get_current_task():
+                outstanding_tasks.append(task)
+        await asyncio.gather(*outstanding_tasks)
+        log.debug("All outstanding tasks completed")
+    except Exception:
+        # If there is an exception, cancel all pending tasks and await their cancellation.
+        pending = []
+        for task in _all_tasks():
+            # Don't kill ourselves, that would be silly.
+            if not task == _get_current_task():
+                pending.append(task)
+
+        log.debug("There was an exception. Cancelling all remaining tasks.")
+        loop = asyncio.get_event_loop()
+        for task in pending:
             task.cancel()
+            with suppress(asyncio.CancelledError):
+                loop.run_until_complete(task)
 
-        # Pump the event loop again. Task.cancel is delivered asynchronously to all running tasks
-        # and each task needs to get scheduled in order to acknowledge the cancel and exit.
-        await asyncio.sleep(0)
-
-        # Once we get scheduled again, all tasks have exited and we're good to go.
+    finally:
+        # By now, all tasks have exited and we're good to go.
         log.debug("run_pulumi_func completed")
 
     if RPC_MANAGER.unhandled_exception is not None:
