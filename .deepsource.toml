@@ -1,0 +1,18 @@
+version = 1
+
+test_patterns = ["tests/**"]
+
+exclude_patterns = [
+    "build/**",
+    "scripts/**"
+]
+
+
+[[analyzers]]
+name = "go"
+enabled = true
+
+  [analyzers.meta]
+  import_paths = ["github.com/pulumi/pulumi"]
+  import_root = "github.com/pulumi/pulumi"
+
